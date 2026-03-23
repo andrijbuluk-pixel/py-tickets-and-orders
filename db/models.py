@@ -45,10 +45,14 @@ class CinemaHall(models.Model):
 class MovieSession(models.Model):
     show_time = models.DateTimeField()
     cinema_hall = models.ForeignKey(
-        to=CinemaHall, on_delete=models.CASCADE, related_name="movie_sessions"
+        to=CinemaHall,
+        on_delete=models.CASCADE,
+        related_name="movie_sessions"
     )
     movie = models.ForeignKey(
-        to=Movie, on_delete=models.CASCADE, related_name="movie_sessions"
+        to=Movie,
+        on_delete=models.CASCADE,
+        related_name="movie_sessions"
     )
 
     def __str__(self) -> str:
@@ -57,23 +61,29 @@ class MovieSession(models.Model):
 
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey("db.User", on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        "db.User",
+        on_delete=models.CASCADE,
+        related_name="orders"
+    )
 
     class Meta:
         ordering = ["-created_at"]
 
     def __str__(self) -> str:
-        return f"Order: {self.created_at}"
+        return f"<Order: {self.created_at}>"
 
 
 class Ticket(models.Model):
     movie_session = models.ForeignKey(
         to=MovieSession,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name="tickets"
     )
     order = models.ForeignKey(
         to=Order,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name="tickets"
     )
     row = models.IntegerField()
     seat = models.IntegerField()
@@ -93,7 +103,7 @@ class Ticket(models.Model):
         max_rows = self.movie_session.cinema_hall.rows
         max_seats = self.movie_session.cinema_hall.seats_in_row
 
-        if not (self.row <= 1 or self.row > max_rows):
+        if not (self.row < 1 or self.row > max_rows):
             raise ValidationError(
                 {
                     "row": [
@@ -102,10 +112,10 @@ class Ticket(models.Model):
                 }
             )
 
-        if not (self.seat <= 1 or self.seat > max_seats):
+        if not (self.seat < 1 or self.seat > max_seats):
             raise ValidationError(
                 {
-                    "seats": [
+                    "seat": [
                         f"Seat number must be in range (1, {max_seats})"
                     ]
                 }
@@ -116,9 +126,8 @@ class Ticket(models.Model):
         return super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        return (f"Ticket: "
-                f"{self.movie_session.movie.title} "
-                f"{self.order.created_at} "
+        return (f"Ticket: {self.movie_session.movie.title} "
+                f"{self.movie_session.show_time} "
                 f"(row: {self.row}, seat: {self.seat})")
 
 
