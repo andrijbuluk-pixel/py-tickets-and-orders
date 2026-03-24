@@ -23,7 +23,8 @@ def create_user(
 
 
 def get_user(user_id: int) -> User:
-    return User.objects.get(pk=user_id)
+    user_model = get_user_model()
+    return user_model.objects.get(pk=user_id)
 
 
 def update_user(

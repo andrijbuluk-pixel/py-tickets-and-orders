@@ -71,7 +71,7 @@ class Order(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self) -> str:
-        return f"<Order: {self.created_at}>"
+        return f"<Order: {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}>"
 
 
 class Ticket(models.Model):
@@ -103,20 +103,22 @@ class Ticket(models.Model):
         max_rows = self.movie_session.cinema_hall.rows
         max_seats = self.movie_session.cinema_hall.seats_in_row
 
-        if not (self.row < 1 or self.row > max_rows):
+        if self.row < 1 or self.row > max_rows:
             raise ValidationError(
                 {
                     "row": [
-                        f"Row number must be in range (1, {max_rows})"
+                        f"Row number must be in range: "
+                        f"(1, row): (1, {max_rows})"
                     ]
                 }
             )
 
-        if not (self.seat < 1 or self.seat > max_seats):
+        if self.seat < 1 or self.seat > max_seats:
             raise ValidationError(
                 {
                     "seat": [
-                        f"Seat number must be in range (1, {max_seats})"
+                        f"Seat number must be in range: "
+                        f"(1, seat): (1, {max_seats})"
                     ]
                 }
             )
@@ -126,9 +128,9 @@ class Ticket(models.Model):
         return super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        return (f"Ticket: {self.movie_session.movie.title} "
+        return (f"<Ticket: {self.movie_session.movie.title} "
                 f"{self.movie_session.show_time} "
-                f"(row: {self.row}, seat: {self.seat})")
+                f"(row: {self.row}, seat: {self.seat})>")
 
 
 class User(AbstractUser):
